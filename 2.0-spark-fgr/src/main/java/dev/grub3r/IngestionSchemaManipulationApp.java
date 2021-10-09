@@ -130,8 +130,13 @@ public class IngestionSchemaManipulationApp {
                 .withColumn("phone",df.col("fields.premise_phone"))
                 .withColumn("dateStart",df.col("fields.opening_date"))
                 .withColumn("dateEnd",df.col("fields.closing_date"))
-                .withColumn("type",df.col("fields.type_description"));
-                // .withColumn("geoX", df.col("fields.geolocation").toArray[0]);
+                .withColumn("type",df.col("fields.type_description"))
+                .withColumn("geoX", df.col("fields.geolocation").getItem(0))
+                .withColumn("geoY", df.col("fields.geolocation").getItem(1))
+                .drop("fields")
+                .drop("record_timestamp")
+                .drop("recordid")
+                .drop("geometry");
 
         return df;
     }
