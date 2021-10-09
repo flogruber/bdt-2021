@@ -12,6 +12,7 @@ public class App {
             System.exit(0);
         }
         IngestionSchemaManipulationApp ingestion = new IngestionSchemaManipulationApp();
-        ingestion.start(args[0]);
+        ingestion.start(args[0], args[0]);
+        ingestion.stopSpark();
     }
 }

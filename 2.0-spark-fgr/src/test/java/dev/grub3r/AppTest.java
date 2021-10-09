@@ -18,6 +18,7 @@ import org.junit.Test;
 public class AppTest {
     // Adopt to your local setup: /Users/martin/Software/FHSTP/repos
     String pathCSVFile = "../data/input/spark/Restaurants_in_Wake_County.csv";
+    String pathJSONFile = "../data/input/spark/Restaurants_in_Durham_County_NC.json";
 
     IngestionSchemaManipulationApp cut;
 
@@ -26,8 +27,13 @@ public class AppTest {
         cut = new IngestionSchemaManipulationApp();
     }
 
+    @After
+    public void tearDown(){
+        cut.stopSpark();
+    }
+
     @Test
     public void shouldReturnDataSet() {
-        cut.start(pathCSVFile);
+        cut.start(pathCSVFile, pathJSONFile);
     }
 }

@@ -14,17 +14,38 @@ import org.apache.spark.sql.functions;
 import java.util.Arrays;
 
 public class IngestionSchemaManipulationApp {
-    public void start(String source){
-        System.out.println("*** SETTING UP SPARK SESSION ***");
-        SparkSession spark = setupSparkSession();
+    private SparkSession _spark;
 
-        System.out.println("*** READING DATA ***");
-        Dataset<Row> df = readFileSource(spark, source);
+    public IngestionSchemaManipulationApp(){
+        startSpark();
+    }
+
+    public void startSpark()
+    {
+        System.out.println("*** SETTING UP SPARK SESSION ***");
+        _spark = setupSparkSession();
+    }
+
+    public void stopSpark()
+    {
+        System.out.println("*** STOPPING SPARK SESSION ***");
+        _spark.stop();
+    }
+
+    public void start(String sourceCSV, String sourceJSON){
+        Dataset<Row> dfCSV = perfomCSVIngestion(sourceCSV);
+        Dataset<Row> dfJSON = performJSONIngestion(sourceJSON);
+    }
+
+    private Dataset<Row> perfomCSVIngestion(String source)
+    {
+        System.out.println("*** READING DATA CSV ***");
+        Dataset<Row> df = readFileSourceCSV(source);
 
         df.show(5);
 
         System.out.println("*** TRANSFORMING DATASET ***");
-        df = transformDataSet(df);
+        df = transformDataSetCSV(df);
 
         df.show(5);
 
@@ -36,7 +57,20 @@ public class IngestionSchemaManipulationApp {
 
         df = repartionDF(df, 4);
 
-        spark.stop();
+        return df;
+    }
+
+    private Dataset<Row> performJSONIngestion(String source)
+    {
+        System.out.println("*** READING DATA JSON ***");
+        Dataset<Row> df = readFileSourceJSON(source);
+        df.show(5);
+        df = df.withColumn("datasedId", df.col("fields.id"));
+        df.show(5);
+
+        df = transformDataSetJSON(df);
+        df.show(5);
+        return df;
     }
 
     private SparkSession setupSparkSession(){
@@ -47,15 +81,22 @@ public class IngestionSchemaManipulationApp {
          return spark;
     }
 
-    private Dataset<Row> readFileSource(SparkSession spark, String source)
+    private Dataset<Row> readFileSourceCSV(String source)
     {
-        Dataset<Row> df = spark.read().format("csv")
+        Dataset<Row> df = _spark.read().format("csv")
                     .option("header", "true")
                     .load(source);
         return df;
     }
 
-    private Dataset<Row> transformDataSet(Dataset<Row> df)
+    private Dataset<Row> readFileSourceJSON(String source)
+    {
+        Dataset<Row> df = _spark.read().format("json")
+                    .load(source);
+        return df;
+    }
+
+    private Dataset<Row> transformDataSetCSV(Dataset<Row> df)
     {
         df = df.withColumn("county", functions.lit("Wake"))
             .withColumnRenamed("HSISID", "datasetId")
@@ -76,6 +117,25 @@ public class IngestionSchemaManipulationApp {
         return df;
     }
 
+    private Dataset<Row> transformDataSetJSON(Dataset<Row> df)
+    {
+        df = df.withColumn("county", functions.lit("Durham"))
+                .withColumn("datasedId", df.col("fields.id"))
+                .withColumn("name",df.col("fields.premise_name"))
+                .withColumn("address1",df.col("fields.premise_address1"))
+                .withColumn("address2",df.col("fields.premise_address2"))
+                .withColumn("city",df.col("fields.premise_city"))
+                .withColumn("state",df.col("fields.premise_state"))
+                .withColumn("zip",df.col("fields.premise_zip"))
+                .withColumn("phone",df.col("fields.premise_phone"))
+                .withColumn("dateStart",df.col("fields.opening_date"))
+                .withColumn("dateEnd",df.col("fields.closing_date"))
+                .withColumn("type",df.col("fields.type_description"));
+                // .withColumn("geoX", df.col("fields.geolocation").toArray[0]);
+
+        return df;
+    }
+
     private Dataset<Row> addID(Dataset<Row> df)
     {
         df = df.withColumn("id", functions.concat(
@@ -89,8 +149,6 @@ public class IngestionSchemaManipulationApp {
 
     private Dataset<Row> repartionDF(Dataset<Row> df, int partCount)
     {
-        // Partition[] partitions = df.rdd().partitions();
-        // int partitionCount = partitions.length;
         System.out.println("Partition count before repartition: " + df.rdd().partitions().length);
 
         df = df.repartition(partCount);
