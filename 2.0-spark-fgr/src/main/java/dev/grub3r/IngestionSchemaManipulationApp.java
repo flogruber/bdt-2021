@@ -33,6 +33,8 @@ public class IngestionSchemaManipulationApp {
 
         df.show(5);
         df.printSchema();
+
+        spark.stop();
     }
 
     private SparkSession setupSparkSession(){
