@@ -14,17 +14,42 @@ import org.apache.spark.sql.functions;
 import java.util.Arrays;
 
 public class IngestionSchemaManipulationApp {
-    public static void start(String source){
+    public void start(String source){
         System.out.println("Hello from Ingestion");
 
         SparkSession spark = setupSparkSession();
 
-        Dataset<Row> df = spark.read().format("csv")
-            .option("header", "true")
-            .load(source);
+        Dataset<Row> df = readFileSource(spark, source);
 
         df.show(5);
 
+        df = transformDataSet(df);
+
+        df.show(5);
+
+        df = addID(df);
+
+        df.show(5);
+    }
+
+    private SparkSession setupSparkSession(){
+        SparkSession spark = SparkSession.builder()
+                                    .appName("Load Restaurants")
+                                    .master("local")
+                                    .getOrCreate();
+         return spark;
+    }
+
+    private Dataset<Row> readFileSource(SparkSession spark, String source)
+    {
+        Dataset<Row> df = spark.read().format("csv")
+                    .option("header", "true")
+                    .load(source);
+        return df;
+    }
+
+    private Dataset<Row> transformDataSet(Dataset<Row> df)
+    {
         df = df.withColumn("county", functions.lit("Wake"))
             .withColumnRenamed("HSISID", "datasetId")
             .withColumnRenamed("NAME", "name")
@@ -41,24 +66,17 @@ public class IngestionSchemaManipulationApp {
             .drop("OBJECTID")
             .drop("PERMITID")
             .drop("GEOCODESTATUS");
+        return df;
+    }
 
-        df.show(5);
-
+    private Dataset<Row> addID(Dataset<Row> df)
+    {
         df = df.withColumn("id", functions.concat(
             df.col("state"),
             functions.lit("_"),
             df.col("county"), functions.lit("_"),
             df.col("datasetId")
         ));
-
-        df.show(5);
-    }
-
-    public static SparkSession setupSparkSession(){
-        SparkSession spark = SparkSession.builder()
-                                    .appName("Load Restaurants")
-                                    .master("local")
-                                    .getOrCreate();
-         return spark;
+        return df;
     }
 }
