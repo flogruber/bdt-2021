@@ -19,34 +19,15 @@ public class AppTest {
     // Adopt to your local setup: /Users/martin/Software/FHSTP/repos
     String pathCSVFile = "/Users/martin/Software/FHSTP/repos/bdt-2021/data/input/spark/Restaurants_in_Wake_County.csv";
 
-    SparkSession spark;
-    Dataset<Row> df;
+    IngestionSchemaManipulationApp cut;
 
     @Before
     public void tearUp() {
-        spark = SparkSession.builder()
-        .appName("Restaurants in Wake County, NC")
-        .master("local")
-        .getOrCreate();
-    }
-
-    @After
-    public void tearDown() {
-        spark.stop();
-    }
-
-    @Test
-    public void shouldSetupSparkSession() {
-        assertThat(spark, is(notNullValue()));
+        cut = new IngestionSchemaManipulationApp();
     }
 
     @Test
     public void shouldReturnDataSet() {
-        Dataset<Row> df = spark.read().format("csv")
-        .option("header", "true")
-        .load(pathCSVFile);
-        assertThat(df, is(notNullValue()));
-
-        assertThat((int) df.count(), is(greaterThan(0)));
+        cut.start(pathCSVFile);
     }
 }
