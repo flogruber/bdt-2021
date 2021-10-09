@@ -12,6 +12,14 @@ import org.apache.spark.sql.SparkSession;
 public class IngestionSchemaManipulationApp {
 
     public void start(String source) {
+        // Ingest the CSV
+        SparkSession spark = SparkSession.builder()
+                .appName("Restaurants in Wake County, NC")
+                .master("local")
+                .getOrCreate();
 
+        Dataset<Row> df = spark.read().format("csv")
+                .option("header", "true")
+                .load(source);
     }
 }

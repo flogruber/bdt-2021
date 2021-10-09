@@ -12,5 +12,6 @@ public class App {
             System.exit(0);
         }
         IngestionSchemaManipulationApp app = new IngestionSchemaManipulationApp();
+        app.start(args[0]);
     }
 }
