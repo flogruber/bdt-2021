@@ -34,6 +34,8 @@ public class IngestionSchemaManipulationApp {
         df.show(5);
         df.printSchema();
 
+        df = repartionDF(df, 4);
+
         spark.stop();
     }
 
@@ -82,6 +84,17 @@ public class IngestionSchemaManipulationApp {
             df.col("county"), functions.lit("_"),
             df.col("datasetId")
         ));
+        return df;
+    }
+
+    private Dataset<Row> repartionDF(Dataset<Row> df, int partCount)
+    {
+        // Partition[] partitions = df.rdd().partitions();
+        // int partitionCount = partitions.length;
+        System.out.println("Partition count before repartition: " + df.rdd().partitions().length);
+
+        df = df.repartition(partCount);
+        System.out.println("Partion count after repartition: " + df.rdd().partitions().length);
         return df;
     }
 }
