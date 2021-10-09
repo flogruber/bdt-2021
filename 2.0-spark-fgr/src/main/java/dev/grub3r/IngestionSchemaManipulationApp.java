@@ -15,21 +15,24 @@ import java.util.Arrays;
 
 public class IngestionSchemaManipulationApp {
     public void start(String source){
-        System.out.println("Hello from Ingestion");
-
+        System.out.println("*** SETTING UP SPARK SESSION ***");
         SparkSession spark = setupSparkSession();
 
+        System.out.println("*** READING DATA ***");
         Dataset<Row> df = readFileSource(spark, source);
 
         df.show(5);
 
+        System.out.println("*** TRANSFORMING DATASET ***");
         df = transformDataSet(df);
 
         df.show(5);
 
+        System.out.println("*** ADDING CUSTOM ID ***");
         df = addID(df);
 
         df.show(5);
+        df.printSchema();
     }
 
     private SparkSession setupSparkSession(){
