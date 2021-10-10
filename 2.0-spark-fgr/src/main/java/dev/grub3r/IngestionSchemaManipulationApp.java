@@ -20,6 +20,20 @@ public class IngestionSchemaManipulationApp {
         startSpark();
     }
 
+    public void start(String sourceCSV, String sourceJSON){
+        Dataset<Row> dfCSV = perfomCSVIngestion(sourceCSV);
+        Dataset<Row> dfJSON = performJSONIngestion(sourceJSON);
+    }
+
+    //region Spark
+    private SparkSession setupSparkSession(){
+        SparkSession spark = SparkSession.builder()
+                                    .appName("Load Restaurants")
+                                    .master("local")
+                                    .getOrCreate();
+         return spark;
+    }
+
     public void startSpark()
     {
         System.out.println("*** SETTING UP SPARK SESSION ***");
@@ -31,12 +45,9 @@ public class IngestionSchemaManipulationApp {
         System.out.println("*** STOPPING SPARK SESSION ***");
         _spark.stop();
     }
+    //endregion
 
-    public void start(String sourceCSV, String sourceJSON){
-        Dataset<Row> dfCSV = perfomCSVIngestion(sourceCSV);
-        Dataset<Row> dfJSON = performJSONIngestion(sourceJSON);
-    }
-
+    //region CSV-Manipulation
     private Dataset<Row> perfomCSVIngestion(String source)
     {
         System.out.println("*** READING DATA CSV ***");
@@ -60,42 +71,10 @@ public class IngestionSchemaManipulationApp {
         return df;
     }
 
-    private Dataset<Row> performJSONIngestion(String source)
-    {
-        System.out.println("*** READING DATA JSON ***");
-        Dataset<Row> df = readFileSourceJSON(source);
-        df.show(5);
-        df = df.withColumn("datasedId", df.col("fields.id"));
-        df.show(5);
-
-        df = transformDataSetJSON(df);
-        df.show(5);
-
-        df = addID(df);
-        df.show(5);
-
-        return df;
-    }
-
-    private SparkSession setupSparkSession(){
-        SparkSession spark = SparkSession.builder()
-                                    .appName("Load Restaurants")
-                                    .master("local")
-                                    .getOrCreate();
-         return spark;
-    }
-
     private Dataset<Row> readFileSourceCSV(String source)
     {
         Dataset<Row> df = _spark.read().format("csv")
                     .option("header", "true")
-                    .load(source);
-        return df;
-    }
-
-    private Dataset<Row> readFileSourceJSON(String source)
-    {
-        Dataset<Row> df = _spark.read().format("json")
                     .load(source);
         return df;
     }
@@ -118,6 +97,32 @@ public class IngestionSchemaManipulationApp {
             .drop("OBJECTID")
             .drop("PERMITID")
             .drop("GEOCODESTATUS");
+        return df;
+    }
+    //endregion
+    
+    //region JSON-Manipulation
+    private Dataset<Row> performJSONIngestion(String source)
+    {
+        System.out.println("*** READING DATA JSON ***");
+        Dataset<Row> df = readFileSourceJSON(source);
+        df.show(5);
+        df = df.withColumn("datasedId", df.col("fields.id"));
+        df.show(5);
+
+        df = transformDataSetJSON(df);
+        df.show(5);
+
+        df = addID(df);
+        df.show(5);
+
+        return df;
+    }
+
+    private Dataset<Row> readFileSourceJSON(String source)
+    {
+        Dataset<Row> df = _spark.read().format("json")
+                    .load(source);
         return df;
     }
 
@@ -144,7 +149,9 @@ public class IngestionSchemaManipulationApp {
 
         return df;
     }
+    //endregion
 
+    //region General
     private Dataset<Row> addID(Dataset<Row> df)
     {
         df = df.withColumn("id", functions.concat(
@@ -164,4 +171,6 @@ public class IngestionSchemaManipulationApp {
         System.out.println("Partion count after repartition: " + df.rdd().partitions().length);
         return df;
     }
+    //endregion
+    
 }
