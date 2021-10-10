@@ -52,13 +52,11 @@ public class IngestionSchemaManipulationApp {
     {
         System.out.println("*** READING DATA CSV ***");
         Dataset<Row> df = readFileSourceCSV(source);
-
-        df.show(5);
+        // df.show(5);
 
         System.out.println("*** TRANSFORMING DATASET ***");
         df = transformDataSetCSV(df);
-
-        df.show(5);
+        // df.show(5);
 
         System.out.println("*** ADDING CUSTOM ID ***");
         df = addID(df);
@@ -106,15 +104,14 @@ public class IngestionSchemaManipulationApp {
     {
         System.out.println("*** READING DATA JSON ***");
         Dataset<Row> df = readFileSourceJSON(source);
-        df.show(5);
-        df = df.withColumn("datasedId", df.col("fields.id"));
-        df.show(5);
+        // df.show(5);
 
         df = transformDataSetJSON(df);
-        df.show(5);
+        // df.show(5);
 
         df = addID(df);
         df.show(5);
+        df.printSchema();
 
         return df;
     }
@@ -129,16 +126,15 @@ public class IngestionSchemaManipulationApp {
     private Dataset<Row> transformDataSetJSON(Dataset<Row> df)
     {
         df = df.withColumn("county", functions.lit("Durham"))
-                .withColumn("datasedId", df.col("fields.id"))
+                .withColumn("datasetId", df.col("fields.id"))
                 .withColumn("name",df.col("fields.premise_name"))
                 .withColumn("address1",df.col("fields.premise_address1"))
                 .withColumn("address2",df.col("fields.premise_address2"))
                 .withColumn("city",df.col("fields.premise_city"))
                 .withColumn("state",df.col("fields.premise_state"))
                 .withColumn("zip",df.col("fields.premise_zip"))
-                .withColumn("phone",df.col("fields.premise_phone"))
+                .withColumn("tel",df.col("fields.premise_phone"))
                 .withColumn("dateStart",df.col("fields.opening_date"))
-                .withColumn("dateEnd",df.col("fields.closing_date"))
                 .withColumn("type",df.col("fields.type_description"))
                 .withColumn("geoX", df.col("fields.geolocation").getItem(0))
                 .withColumn("geoY", df.col("fields.geolocation").getItem(1))
@@ -172,5 +168,4 @@ public class IngestionSchemaManipulationApp {
         return df;
     }
     //endregion
-    
 }
