@@ -70,6 +70,10 @@ public class IngestionSchemaManipulationApp {
 
         df = transformDataSetJSON(df);
         df.show(5);
+
+        df = addID(df);
+        df.show(5);
+
         return df;
     }
 
