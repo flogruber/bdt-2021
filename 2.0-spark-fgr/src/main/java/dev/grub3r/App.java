@@ -13,6 +13,6 @@ public class App {
         }
         IngestionSchemaManipulationApp ingestion = new IngestionSchemaManipulationApp();
         ingestion.start(args[0], args[0]);
-        ingestion.stopSpark();
+        // ingestion.stopSpark();
     }
 }

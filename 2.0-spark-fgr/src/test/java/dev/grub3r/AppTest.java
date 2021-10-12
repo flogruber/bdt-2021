@@ -29,7 +29,7 @@ public class AppTest {
 
     @After
     public void tearDown(){
-        cut.stopSpark();
+        // cut.stopSpark();
     }
 
     @Test

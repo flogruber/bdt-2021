@@ -17,12 +17,23 @@ public class IngestionSchemaManipulationApp {
     private SparkSession _spark;
 
     public IngestionSchemaManipulationApp(){
-        startSpark();
+        // startSpark();
     }
 
     public void start(String sourceCSV, String sourceJSON){
+        startSpark();
         Dataset<Row> dfCSV = perfomCSVIngestion(sourceCSV);
         Dataset<Row> dfJSON = performJSONIngestion(sourceJSON);
+
+        System.out.println("*** CSV ***");
+        dfCSV.show(5);
+        dfCSV.printSchema();
+
+        System.out.println("*** JSON ***");
+        dfJSON.show(5);
+        dfJSON.printSchema();
+
+        stopSpark();
     }
 
     //region Spark
@@ -50,19 +61,19 @@ public class IngestionSchemaManipulationApp {
     //region CSV-Manipulation
     private Dataset<Row> perfomCSVIngestion(String source)
     {
-        System.out.println("*** READING DATA CSV ***");
+        // System.out.println("*** READING DATA CSV ***");
         Dataset<Row> df = readFileSourceCSV(source);
         // df.show(5);
 
-        System.out.println("*** TRANSFORMING DATASET ***");
+        // System.out.println("*** TRANSFORMING DATASET ***");
         df = transformDataSetCSV(df);
         // df.show(5);
 
-        System.out.println("*** ADDING CUSTOM ID ***");
+        // System.out.println("*** ADDING CUSTOM ID ***");
         df = addID(df);
 
-        df.show(5);
-        df.printSchema();
+        // df.show(5);
+        // df.printSchema();
 
         df = repartionDF(df, 4);
 
@@ -102,7 +113,7 @@ public class IngestionSchemaManipulationApp {
     //region JSON-Manipulation
     private Dataset<Row> performJSONIngestion(String source)
     {
-        System.out.println("*** READING DATA JSON ***");
+        // System.out.println("*** READING DATA JSON ***");
         Dataset<Row> df = readFileSourceJSON(source);
         // df.show(5);
 
@@ -110,8 +121,8 @@ public class IngestionSchemaManipulationApp {
         // df.show(5);
 
         df = addID(df);
-        df.show(5);
-        df.printSchema();
+        // df.show(5);
+        // df.printSchema();
 
         return df;
     }
@@ -161,10 +172,10 @@ public class IngestionSchemaManipulationApp {
 
     private Dataset<Row> repartionDF(Dataset<Row> df, int partCount)
     {
-        System.out.println("Partition count before repartition: " + df.rdd().partitions().length);
+        // System.out.println("Partition count before repartition: " + df.rdd().partitions().length);
 
         df = df.repartition(partCount);
-        System.out.println("Partion count after repartition: " + df.rdd().partitions().length);
+        // System.out.println("Partion count after repartition: " + df.rdd().partitions().length);
         return df;
     }
     //endregion
