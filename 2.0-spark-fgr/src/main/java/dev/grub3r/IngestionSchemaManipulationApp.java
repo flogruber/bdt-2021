@@ -33,6 +33,8 @@ public class IngestionSchemaManipulationApp {
         dfJSON.show(5);
         dfJSON.printSchema();
 
+        Dataset<Row> dfUN = unionDatasets(dfCSV, dfJSON);
+
         stopSpark();
     }
 
@@ -176,6 +178,17 @@ public class IngestionSchemaManipulationApp {
 
         df = df.repartition(partCount);
         // System.out.println("Partion count after repartition: " + df.rdd().partitions().length);
+        return df;
+    }
+
+    private Dataset<Row> unionDatasets(Dataset<Row> df1, Dataset<Row> df2)
+    {
+        Dataset<Row> df = df1.unionByName(df2);
+        df.show(5);
+        df.printSchema();
+        System.out.println("We have " + df.count() + " records.");
+
+        System.out.println("Partition count: " + df.rdd().partitions().length);
         return df;
     }
     //endregion
