@@ -49,6 +49,8 @@
 
         <module>3.1-spark</module>
 
+        <module>4.1-spark</module>
+
     </modules>
 
 
