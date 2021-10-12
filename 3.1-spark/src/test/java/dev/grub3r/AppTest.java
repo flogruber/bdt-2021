@@ -35,5 +35,6 @@ public class AppTest {
     @Test
     public void shouldReturnDataSet() {
         cut.start(pathCSVFile, "transform");
+        cut.start(pathCSVFile, "drop");
     }
 }
