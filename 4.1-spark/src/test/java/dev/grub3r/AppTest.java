@@ -34,6 +34,6 @@ public class AppTest {
 
     @Test
     public void shouldReturnDataSet() {
-        cut.start(1);
+        cut.start(10);
     }
 }
